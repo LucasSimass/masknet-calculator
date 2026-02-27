@@ -3,8 +3,30 @@
   2) split info to sectors
 */
 
-class maskNet {
+class MaskNet {
   
+  // PROPERTIES SECTION
+
+  private _maskNet: string | null = null;
+  
+  private _isCIRD: boolean = false;
+  private _isDDN: boolean = false;
+  private _haveSubNets: boolean = false;
+  
+  //----------------------------------------------------
+
+  // CONSTRUCTOR SECTION
+  /**
+   * Can be x.x.x.x or /x
+   * 
+   * @param {string} maskNet - your mask Net mask (x.x.x.x or /x)
+  */
+  constructor (maskNet: string){
+    this.verifyMaskNet(maskNet);
+    this._maskNet = maskNet;
+    return this;
+  }
+
   // MATH SECTION
   private stringValidIntFiniteNumber(string : string): boolean {
     const fByteString = parseInt(string);
@@ -14,51 +36,27 @@ class maskNet {
   private isEven(number: number): boolean {
     return number % 2 == 0;
   }
+
+  /**
+   * check if value can be 2^x? 
+  */
+  private isPowerOfTwo(n: number) {
+    return  n > 0 && (n & (n - 1)) === 0
+  }
   
   //----------------------------------------------------
 
+  // DDN AND CIRD VALIDATION TESTING
+  
   /**
-   * Verify if maskNet is valid.
+   * Check if the DDN is valid.
    * 
-   * @param {string} maskNet - the maskNet string
+   * @param {string} maskNet - the mask net
    * 
-   * @throws {Error} if maskNet string input apresent an error
-   * 
+   * @throws {Error} - if the DDN is not right.
   */
-  private verifymaskNet(maskNet: string){
-    const clearmaskNet = maskNet.replaceAll(" ", "");
-    
-    const isCIRD = (maskNet.split("/").length - 1) == 1; // is /x ?
-    const isDDN = (maskNet.split(".").length) == 4;// is x.x.x.x ?
-
-    console.log(maskNet.split("/"));
-    console.log(maskNet.split("."));
-
-    console.log(maskNet.split("/").length);
-    console.log(maskNet.split(".").length);
-    
-    
-    console.log(isCIRD);
-    console.log(isDDN);
-
-    // can't be CIRD and DDN  
-    if (isCIRD && isDDN){
-      throw new Error("Your maskNet should be x.x.x.x or /x")
-    }
-
-    // is not CIRD and DDN  
-    if (!isCIRD && !isDDN){
-      throw new Error("Your maskNet should be x.x.x.x or /x")
-    }
-
-    // can't be empty
-    if (clearmaskNet.length == 0){
-      throw new Error("Masknet input is empty")
-    }
-
-
-    if (isDDN){
-      console.log("is ddn");
+  private validateDDN(maskNet: string){
+    console.log("is ddn");
       
       const splitDDN = maskNet.split(".");
       
@@ -73,7 +71,7 @@ class maskNet {
         const isNumber = this.stringValidIntFiniteNumber(byteString);
 
         if (!isNumber) {
-          throw new Error(`An byte of the masknet is NOT an valid byte number`);
+          throw new Error(`An byte of the mask net is NOT an valid byte number`);
         }
 
         // iByteString < 0 or >255 ?
@@ -86,45 +84,151 @@ class maskNet {
           throw new Error(`An byte of the mask net is can't be > 0 \nError Example: 255.0.255.0 -> THIS WILL RETURN AN ERROR!`);
         }
 
+        
         // this is the subnet or an local net input
-        if (iByteString != 255 && iByteString % 2 != 0){
-          throw new Error(`The subnet mask need be an even`);
+        if (iByteString != 255 && iByteString.toString(2).padStart(8, '0').includes("01")){
+          throw new Error(`The subnet mask must be .128 or .192 or .224 or .240 or .248 or .252`);
+        }
+
+        // subnet validation
+        if (iByteString != 255 && !iByteString.toString(2).padStart(8, '0').includes("01")){
+          this._haveSubNets = true;
         }
         
         // add last byte
         lastByteString = byteString;
       }
 
+      // confirm that is an DDN 
+      this._isDDN = true;
       return;
-    }
-    
-    if (isCIRD) {
-      const clearCIRD = maskNet.replaceAll('/', '');
+  }
+
+   /**
+   * Check if the CIRD is valid.
+   * 
+   * @param {string} maskNet - the mask net
+   * 
+   * @throws {Error} - if the CIRD is not right.
+  */
+  private validateCIRD(maskNet: string) {
+    const clearCIRD = maskNet.replaceAll('/', '');
       const iCIRD = parseInt(clearCIRD);
       const isValidNumber = this.stringValidIntFiniteNumber(clearCIRD);
       if (!isValidNumber) {
-        throw new Error(`${maskNet} is not an valid CIRD`)
+        throw new Error(`Mask net is not an valid CIRD`)
       } 
 
       if (iCIRD < 0 || iCIRD > 32){
-        throw new Error(`${maskNet} can't be <0 or >32`)
+        throw new Error(`Mask net can't be <0 or >32`)
       }
-    
 
+      // check if CIRD have subnet
+      if (iCIRD != 0 && iCIRD != 8 && iCIRD != 16 && iCIRD != 24 && iCIRD != 32) {
+        this._haveSubNets = true;
+      }
+
+      // confirms that is a CIRD
+      this._isCIRD = true;
       return;
-    }
   }
 
+  //----------------------------------------------------
+
+  // Validation Section
+
   /**
-   * Can be x.x.x.x or /x
+   * Verify if mask net is valid.
    * 
-   * @param {string} maskNet - your maskNet mask (x.x.x.x or /x)
+   * @param {string} maskNet - the mask net string
+   * 
+   * @throws {Error} if mask net string input apresent an error
+   * 
   */
-  public setmaskNet(maskNet: string){
-    this.verifymaskNet(maskNet)
-    return this;
+  private verifyMaskNet(maskNet: string){
+    const clearMaskNet = maskNet.replaceAll(" ", "");
+    
+    // INDICATE that is a CIRD
+    const isCIRD = (maskNet.split("/").length - 1) == 1; // is /x ?
+    
+    // INDICATE that is a DDN
+    const isDDN = (maskNet.split(".").length) == 4;// is x.x.x.x ?
+
+    // console.log(maskNet.split("/"));
+    // console.log(maskNet.split("."));
+
+    // console.log(maskNet.split("/").length);
+    // console.log(maskNet.split(".").length);
+    
+    // console.log(isCIRD);
+    // console.log(isDDN);
+
+    // can't be CIRD and DDN  
+    if (isCIRD && isDDN){
+      throw new Error("Your mask net should be x.x.x.x or /x")
+    }
+
+    // is not CIRD and DDN  
+    if (!isCIRD && !isDDN){
+      throw new Error("Your mask net should be x.x.x.x or /x")
+    }
+
+    // can't be empty
+    if (clearMaskNet.length == 0){
+      throw new Error("Mask net input is empty")
+    }
+
+
+    if (isDDN){
+      this.validateDDN(maskNet);
+    }
+    
+    if (isCIRD) {
+      this.validateCIRD(maskNet)
+    }
+  }
+  //----------------------------------------------------
+
+  /**
+   * Get the CIRD of the mask net.
+  */
+  public get getCIRD(): string {
+    if (this.isCIRD){
+      return this._maskNet!;
+    }
+
+    console.log(this._maskNet);
+    
+    console.log(this._maskNet!.split('.')
+           .map((oct) => {
+            return Number(oct).toString(2).replace(/0/g, '').length
+          }));
+    
+    return "/" + this._maskNet!.split('.')
+           .map((oct) => {
+            // lenght of all 1 on the byte
+            return Number(oct).toString(2).replace(/0/g, '').length
+          })
+          .reduce(((pv, cv) => pv + cv), 0);
+  }
+
+  
+
+  public get isDDN() : boolean {
+    return this._isDDN;
+  }
+  
+  public get isCIRD() : boolean {
+    return this._isCIRD;
+  }
+
+  public get haveSubNets() : boolean {
+    return this._haveSubNets;
   }
 }
 
-const sn = new maskNet().setmaskNet("255.255.255.0");
-console.log("oi")
+const sn = new MaskNet("255.255.255.255");
+console.log(sn.isDDN)
+console.log(sn.isCIRD)
+console.log(sn.haveSubNets);
+console.log(sn.getCIRD)
