@@ -55,9 +55,7 @@ class MaskNet {
    * 
    * @throws {Error} - if the DDN is not right.
   */
-  private validateDDN(maskNet: string){
-    console.log("is ddn");
-      
+  private validateDDN(maskNet: string){      
       const splitDDN = maskNet.split(".");
       
       let lastByteString;
@@ -154,15 +152,6 @@ class MaskNet {
     // INDICATE that is a DDN
     const isDDN = (maskNet.split(".").length) == 4;// is x.x.x.x ?
 
-    // console.log(maskNet.split("/"));
-    // console.log(maskNet.split("."));
-
-    // console.log(maskNet.split("/").length);
-    // console.log(maskNet.split(".").length);
-    
-    // console.log(isCIRD);
-    // console.log(isDDN);
-
     // can't be CIRD and DDN  
     if (isCIRD && isDDN){
       throw new Error("Your mask net should be x.x.x.x or /x")
@@ -196,13 +185,6 @@ class MaskNet {
     if (this.isCIRD){
       return this._maskNet!;
     }
-
-    console.log(this._maskNet);
-    
-    console.log(this._maskNet!.split('.')
-           .map((oct) => {
-            return Number(oct).toString(2).replace(/0/g, '').length
-          }));
     
     return "/" + this._maskNet!.split('.')
            .map((oct) => {
@@ -212,7 +194,28 @@ class MaskNet {
           .reduce(((pv, cv) => pv + cv), 0);
   }
 
-  
+  public get getDDN(): string {
+    if (this._isDDN){
+      return this._maskNet!;
+    }
+
+    const bitsActive = Number(this._maskNet!
+                      .replace("/", ""));
+   
+    const ddnArrayString: string[] = new Array(Math.ceil(bitsActive/8)-1).fill("255", 0, Math.ceil(bitsActive/8)-1)
+    
+    const submask = parseInt((0xFF << (8 - bitsActive%8) & 0xFF).toString(2),2).toString();
+
+    ddnArrayString.push(submask != '0' ? submask : "255");
+
+    const ddnArrayLenght = ddnArrayString.length;
+    
+    for (let i = 0; i < (4 - ddnArrayLenght); i++) {
+      ddnArrayString.push('0');
+    }
+
+    return ddnArrayString.join('.');
+  }
 
   public get isDDN() : boolean {
     return this._isDDN;
@@ -227,8 +230,9 @@ class MaskNet {
   }
 }
 
-const sn = new MaskNet("255.255.255.255");
-console.log(sn.isDDN)
-console.log(sn.isCIRD)
+const sn = new MaskNet("/17");
+console.log(sn.isDDN);
+console.log(sn.isCIRD);
 console.log(sn.haveSubNets);
-console.log(sn.getCIRD)
+console.log(sn.getCIRD);
+console.log(sn.getDDN);
