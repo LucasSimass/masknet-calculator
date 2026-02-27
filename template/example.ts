@@ -1,3 +1,6 @@
+// Created by Lucas Simas 02/2026
+// GITHUB: https://github.com/LucasSimass
+
 import { MaskNet } from "../subNet.ts";
 
 // Accept CIRD

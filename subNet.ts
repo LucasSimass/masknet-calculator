@@ -1,9 +1,7 @@
-/*
-  1) get user input and verify and refine all possible issues
-  2) split info to sectors
-*/
+// Created by Lucas Simas 02/2026
+// GITHUB: https://github.com/LucasSimass
 
-class MaskNet {
+export class MaskNet {
   
   // PROPERTIES SECTION
 
@@ -11,7 +9,6 @@ class MaskNet {
   
   private _isCIRD: boolean = false;
   private _isDDN: boolean = false;
-  private _haveSubNets: boolean = false;
   
   //----------------------------------------------------
 
@@ -33,17 +30,6 @@ class MaskNet {
     return !isNaN(fByteString) && isFinite(fByteString); 
   }
 
-  private isEven(number: number): boolean {
-    return number % 2 == 0;
-  }
-
-  /**
-   * check if value can be 2^x? 
-  */
-  private isPowerOfTwo(n: number) {
-    return  n > 0 && (n & (n - 1)) === 0
-  }
-  
   //----------------------------------------------------
 
   // DDN AND CIRD VALIDATION TESTING
@@ -87,11 +73,6 @@ class MaskNet {
         if (iByteString != 255 && iByteString.toString(2).padStart(8, '0').includes("01")){
           throw new Error(`The subnet mask must be .128 or .192 or .224 or .240 or .248 or .252`);
         }
-
-        // subnet validation
-        if (iByteString != 255 && !iByteString.toString(2).padStart(8, '0').includes("01")){
-          this._haveSubNets = true;
-        }
         
         // add last byte
         lastByteString = byteString;
@@ -119,11 +100,6 @@ class MaskNet {
 
       if (iCIRD < 0 || iCIRD > 32){
         throw new Error(`Mask net can't be <0 or >32`)
-      }
-
-      // check if CIRD have subnet
-      if (iCIRD != 0 && iCIRD != 8 && iCIRD != 16 && iCIRD != 24 && iCIRD != 32) {
-        this._haveSubNets = true;
       }
 
       // confirms that is a CIRD
@@ -225,15 +201,7 @@ class MaskNet {
     return this._isCIRD;
   }
 
-  public get haveSubNets() : boolean {
-    return this._haveSubNets;
-  }
-
   public get getSubNets(): number {
-    if (!this._haveSubNets){
-      return 0;
-    }
-
     return Math.pow(2, Number(this.getCIRD.replace('/', '')) % 8)
   }
 
@@ -265,13 +233,3 @@ class MaskNet {
     return (this.getAddresses * this.getSubNets) - (2 * this.getSubNets);
   }
 }
-
-const sn = new MaskNet("/18");
-console.log(sn.isDDN);
-console.log(sn.isCIRD);
-console.log(sn.haveSubNets);
-console.log(sn.getCIRD);
-console.log(sn.getDDN);
-console.log(sn.getSubNets);
-console.log(sn.getAddresses);
-console.log(sn.getTotalAdresses)
