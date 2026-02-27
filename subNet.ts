@@ -228,11 +228,50 @@ class MaskNet {
   public get haveSubNets() : boolean {
     return this._haveSubNets;
   }
+
+  public get getSubNets(): number {
+    if (!this._haveSubNets){
+      return 0;
+    }
+
+    return Math.pow(2, Number(this.getCIRD.replace('/', '')) % 8)
+  }
+
+  /**
+   * Get all addresses per sub-net
+  */
+  public get getAddresses(): number {
+    return Math.pow(2, (32 - Number(this.getCIRD.replace('/', ''))));
+  }
+
+   /**
+   * Get all hosts/valids per sub-net
+  */
+  public get getHosts() {
+    return this.getAddresses - 2;
+  }
+
+  /**
+   * Get the total Address of ALL sub-nets
+  */
+  public get getTotalAdresses() {
+    return this.getAddresses * this.getSubNets;
+  }
+
+  /**
+   * Get the total hosts/valids of ALL sub-nets
+  */
+  public get getTotalHosts() {
+    return (this.getAddresses * this.getSubNets) - (2 * this.getSubNets);
+  }
 }
 
-const sn = new MaskNet("/17");
+const sn = new MaskNet("/18");
 console.log(sn.isDDN);
 console.log(sn.isCIRD);
 console.log(sn.haveSubNets);
 console.log(sn.getCIRD);
 console.log(sn.getDDN);
+console.log(sn.getSubNets);
+console.log(sn.getAddresses);
+console.log(sn.getTotalAdresses)
