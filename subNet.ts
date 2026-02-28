@@ -152,8 +152,26 @@ export class MaskNet {
       this.validateCIRD(maskNet)
     }
   }
-  //----------------------------------------------------
 
+
+  /**
+   * An static function to check if mask-net is valid.
+   * 
+   * Use if you want to check an mask-net without receiving erros.
+   * 
+   * @param {string} maskNet - An possible mask net
+   * 
+   * @returns boolean - Check if is an valid mask net
+  */
+  public static isValidMaskNet(maskNet: string): boolean {
+    try {
+      new MaskNet(maskNet);
+    } catch(e) {
+      return false;
+    }
+    return true;
+  }
+  //----------------------------------------------------
   /**
    * Get the CIRD of the mask net.
   */
@@ -246,5 +264,4 @@ export class MaskNet {
         return n.toString(2);
       }).join(".")
   }
-  
 }
