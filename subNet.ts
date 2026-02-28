@@ -232,4 +232,19 @@ export class MaskNet {
   public get getTotalHosts() {
     return (this.getAddresses * this.getSubNets) - (2 * this.getSubNets);
   }
+
+
+  /**
+   * Return the DDN bytes string
+  */
+  public get getDDNBytes() : string {
+    return this.getDDN.split('.').map(Number).map(
+      n => {
+        if (n == 0){
+          return "00000000";
+        }
+        return n.toString(2);
+      }).join(".")
+  }
+  
 }

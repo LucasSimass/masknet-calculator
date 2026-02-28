@@ -14,9 +14,7 @@ console.log(sn.getAddresses);     // output -> 16384  # per sub-net
 console.log(sn.getHosts);         // output -> 16382  # per sub-net
 console.log(sn.getTotalAdresses)  // output -> 65536 
 console.log(sn.getTotalHosts)     // output -> 65528 
-
-
-console.log("");
+console.log(sn.getDDNBytes)       // output -> "11111111.11111111.11000000.00000000" 
 
 // Accept DDN
 const sn2 = new MaskNet("255.255.255.0");
@@ -29,3 +27,4 @@ console.log(sn2.getAddresses);     // output -> 256  # per sub-net
 console.log(sn2.getHosts);         // output -> 254  # per sub-net
 console.log(sn2.getTotalAdresses)  // output -> 256 
 console.log(sn2.getTotalHosts)     // output -> 254  
+console.log(sn2.getDDNBytes)        // output -> "11111111.11111111.11111111.00000000" 
