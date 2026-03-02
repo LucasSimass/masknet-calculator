@@ -32,8 +32,8 @@ export class MaskNet {
 
   //----------------------------------------------------
 
-  // DDN AND CIRD VALIDATION TESTING
-  
+  // Validation Section
+
   /**
    * Check if the DDN is valid.
    * 
@@ -107,10 +107,6 @@ export class MaskNet {
       return;
   }
 
-  //----------------------------------------------------
-
-  // Validation Section
-
   /**
    * Verify if mask net is valid.
    * 
@@ -152,7 +148,6 @@ export class MaskNet {
       this.validateCIRD(maskNet)
     }
   }
-
 
   /**
    * An static function to check if mask-net is valid.
@@ -231,26 +226,25 @@ export class MaskNet {
   }
 
    /**
-   * Get all hosts/valids per sub-net
+   * Get all hosts/valids length per sub-net
   */
   public get getHosts() {
     return this.getAddresses - 2;
   }
 
   /**
-   * Get the total Address of ALL sub-nets
+   * Get the total Address length of ALL sub-nets
   */
   public get getTotalAdresses() {
     return this.getAddresses * this.getSubNets;
   }
 
   /**
-   * Get the total hosts/valids of ALL sub-nets
+   * Get the total hosts/valids length of ALL sub-nets
   */
   public get getTotalHosts() {
     return (this.getAddresses * this.getSubNets) - (2 * this.getSubNets);
   }
-
 
   /**
    * Return the DDN bytes string
@@ -263,5 +257,5 @@ export class MaskNet {
         }
         return n.toString(2);
       }).join(".")
-  }
+  }  
 }
